@@ -1,0 +1,21 @@
+# Exigés par l'énoncé
+__pycache__/
+*.pyc
+.git/
+.venv/
+README.md
+
+# Ajouts : rien de tout cela n'a sa place dans le contexte de build
+venv/
+.env
+*.md
+captures/
+Dockerfile*
+.dockerignore
+.DS_Store
+.idea/
+.vscode/
+logs/
+tp1.sh
+app.py.orig
+*.sh

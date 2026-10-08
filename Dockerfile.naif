@@ -1,0 +1,23 @@
+# Variante NAÏVE (expérience B) : identique au Dockerfile, sauf que tout le
+# contexte est copié d'un coup AVANT l'installation des dépendances.
+# Toute modification d'app.py invalide donc la couche COPY et rejoue pip install.
+FROM python:3.12.7-slim-bookworm
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
+
+COPY . ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN groupadd --gid 10001 appuser \
+    && useradd --uid 10001 --gid 10001 --no-create-home --shell /usr/sbin/nologin appuser \
+    && chown -R appuser:appuser /app
+
+USER 10001:10001
+
+EXPOSE 8000
+
+CMD ["python", "app.py"]
