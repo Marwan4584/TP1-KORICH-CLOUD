@@ -1,0 +1,71 @@
+Extrait du journal d'exécution réel du 2026-10-06 (logs/azure_20261006_145724.log)
+Preuve que le dépôt dermascan-health:0.1.0 était présent dans le registre ACR acrdermascanmk07.
+
+=================== PARTIE 4.1 — CREATION DU REGISTRE ===================
+
+$ az acr check-name --name acrdermascanmk07 --output table
+AvailableLoginServerName     NameAvailable
+---------------------------  ---------------
+acrdermascanmk07.azurecr.io  True
+>>> code retour: 0
+--- régions autorisées par la politique de l'abonnement ---
+belgiumcentral italynorth spaincentral polandcentral denmarkeast 
+
+$ az provider register --namespace Microsoft.ContainerRegistry --wait
+Registered
+
+$ az acr create --resource-group rg-dermascan-registre-mk07 --name acrdermascanmk07 --sku Basic --location italynorth
+NAME              RESOURCE GROUP              LOCATION    SKU    LOGIN SERVER                 CREATION DATE         ADMIN ENABLED
+----------------  --------------------------  ----------  -----  ---------------------------  --------------------  ---------------
+acrdermascanmk07  rg-dermascan-registre-mk07  italynorth  Basic  acrdermascanmk07.azurecr.io  2026-10-06T12:59:02Z  False
+>>> REGION DU REGISTRE : italynorth
+
+$ az acr show --name acrdermascanmk07 --output table
+NAME              RESOURCE GROUP              LOCATION    SKU    LOGIN SERVER                 CREATION DATE         ADMIN ENABLED
+----------------  --------------------------  ----------  -----  ---------------------------  --------------------  ---------------
+acrdermascanmk07  rg-dermascan-registre-mk07  italynorth  Basic  acrdermascanmk07.azurecr.io  2026-10-06T12:59:02Z  False
+>>> code retour: 0
+
+=================== PARTIE 4.4 — VERIFICATION DANS LE REGISTRE ===================
+
+$ az acr repository list --name acrdermascanmk07 --output table
+Result
+----------------
+dermascan-health
+>>> code retour: 0
+
+$ az acr repository show-tags --name acrdermascanmk07 --repository dermascan-health --output table
+Result
+--------
+0.1.0
+>>> code retour: 0
+
+$ az acr manifest list-metadata --registry acrdermascanmk07 --name dermascan-health --output table
+WARNING: Command group 'acr manifest' is in preview and under development. Reference and support levels: https://aka.ms/CLI_refstatus
+Architecture    ConfigMediaType                                 CreatedTime                   Digest                                                                   ImageSize    LastUpdateTime                MediaType                                             Os
+--------------  ----------------------------------------------  ----------------------------  -----------------------------------------------------------------------  -----------  ----------------------------  ----------------------------------------------------  -----
+amd64           application/vnd.docker.container.image.v1+json  2026-10-06T13:00:17.1965703Z  sha256:c10ff14f5f2e0c18563f8adc4af83c37f83e0e4b943b8dade903ba96afc5d6f9  47698471     2026-10-06T13:00:17.1965703Z  application/vnd.docker.distribution.manifest.v2+json  linux
+>>> code retour: 0
+
+=================== TEST BOUT EN BOUT DEPUIS ACR ===================
+Unable to find image 'acrdermascanmk07.azurecr.io/dermascan-health:0.1.0' locally
+0.1.0: Pulling from dermascan-health
+8cf9fb7a0b56: Already exists
+5e739003c334: Already exists
+5f86e0092844: Already exists
+46271edb89ae: Already exists
+5c8482ee1ba7: Already exists
+ab24482f45df: Already exists
+220aaef9b4d8: Already exists
+c9664775c9f6: Already exists
+d99dde864ea9: Already exists
+Digest: sha256:c10ff14f5f2e0c18563f8adc4af83c37f83e0e4b943b8dade903ba96afc5d6f9
+Status: Downloaded newer image for acrdermascanmk07.azurecr.io/dermascan-health:0.1.0
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+baf1a5866631d6e9553fe0c6a4593708de64d2002627c4ab575ba4b7a307d074
+>>> DUREE: 1.642 s
+
+$ curl -s http://localhost:8002/health
+{"hostname":"baf1a5866631","service":"dermascan-health","status":"ok","uptime_seconds":5.1,"version":"0.1.0"}
+>>> code retour: 0
+
